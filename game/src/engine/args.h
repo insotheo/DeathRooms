@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #define TICK_ARGS float dt, sf::RenderWindow& wnd
+#define ENTITY_TICK_ARGS float dt, sf::RenderWindow& wnd, Scene& scene
 #define _TICK_ARGS dt, wnd
 
 #define RENDER_ARGS sf::RenderWindow& wnd

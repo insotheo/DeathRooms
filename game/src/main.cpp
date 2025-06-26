@@ -1,9 +1,12 @@
 #include <SFML/Graphics.hpp>
 
 #include "engine/scenes_handler.h"
+#include "engine/static_assets.h"
 #include "game/scenes.h"
 
 int main(){
+    StaticAssets::load();
+
     //scenes defs
     GameScene* game_scene = NEW_SCENE(GameScene);
 
