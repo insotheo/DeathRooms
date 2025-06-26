@@ -2,11 +2,19 @@ project(DeathRoomsTheGame)
 
 file(GLOB GAME_SOURCES
 src/main.cpp
+src/engine/*.cpp
+src/game/*.cpp
+)
+
+set(INCLUDE_DIRS
+src/
+vendor/SFML/include
 )
 
 add_executable(Death_Rooms ${GAME_SOURCES})
-target_link_directories(Death_Rooms 
-PRIVATE include/ vendor/SFML/include)
+
+target_include_directories(Death_Rooms PRIVATE ${INCLUDE_DIRS})
+
 target_link_libraries(Death_Rooms PRIVATE
 FLAC
 freetype
