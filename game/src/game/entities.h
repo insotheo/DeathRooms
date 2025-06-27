@@ -18,7 +18,7 @@ public:
             if(!s_idle_texture.loadFromFile("./assets/player/idle.png")){s_loaded = false;}
         }
 
-        m_animator.push_anim("IDLE", Animation(&s_idle_texture, 11, 20, 32, 32, true));
+        m_animator.push_anim("IDLE", Animation(&s_idle_texture, 8, 10, 192, 192, true));
 
         m_animator.set_anim("IDLE");
     }
