@@ -50,6 +50,8 @@ void Player::tick(ENTITY_TICK_ARGS){
     m_sprite.setPosition(m_pos);
     m_animator.tick(dt);
     m_is_moving = false;
+
+    p_entity_rect = m_sprite.getGlobalBounds();
 }
 
 void Player::render(RENDER_ARGS){

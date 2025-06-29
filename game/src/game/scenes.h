@@ -13,7 +13,9 @@ protected:
     void finish() override;
 
 private:
+    sf::View m_cam;
     Player* m_player;
+
 };
 
 #endif

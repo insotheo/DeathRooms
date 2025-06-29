@@ -25,7 +25,7 @@ public:
         m_animator.push_anim("IDLE", Animation(&s_idle_texture, 8, 10, 192, 192, true));
         m_animator.push_anim("RUN", Animation(&s_run_texture, 6, 14, 192, 192, true));
 
-        m_animator.set_anim("RUN");
+        m_animator.set_anim("IDLE");
     }
 
     ~Player(){
