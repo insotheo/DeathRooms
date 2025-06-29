@@ -37,6 +37,10 @@ public:
     }
 
     inline void set_anim(const std::string& anim_name){
+        if(m_current_anim == anim_name){
+            return;
+        }
+        
         const auto it = m_animations.find(anim_name);
         if(it == m_animations.end()){
             return;
@@ -50,6 +54,8 @@ public:
         m_sprite.setTextureRect(sf::IntRect({0, 0}, sf::Vector2(anim.frame_w, anim.frame_h)));
         m_sprite.setOrigin(m_sprite.getLocalBounds().getCenter());
     }
+
+    inline const std::string& get_current_anim() const { return m_current_anim; }
 private:
     sf::Sprite& m_sprite;
     size_t frame;
