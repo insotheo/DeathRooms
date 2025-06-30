@@ -9,11 +9,10 @@
 
 class Player : _ENTITY{
 public:
-    Player()
-    : m_speed(100.f), 
-    m_sprite(StaticAssets::null_texture), m_animator(m_sprite), m_pos(100.f, 100.f), m_looking_right(true), m_dir(0.f, 0.f), m_is_moving(false)
+    Player(const sf::Vector2f init_pos)
+    : m_speed(150.f), 
+    m_sprite(StaticAssets::null_texture), m_animator(m_sprite), m_pos(init_pos), m_looking_right(true), m_dir(0.f, 0.f), m_is_moving(false)
     {
-        m_sprite.setScale({1.25f, 1.25f});
 
         if(!s_loaded){
             s_loaded = true;
