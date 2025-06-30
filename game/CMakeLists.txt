@@ -3,11 +3,13 @@ project(DeathRoomsTheGame)
 file(GLOB GAME_SOURCES
 src/main.cpp
 src/engine/*.cpp
+src/imgui/*.cpp
 src/game/*.cpp
 )
 
 set(INCLUDE_DIRS
 src/
+src/imgui/
 vendor/SFML/include
 )
 

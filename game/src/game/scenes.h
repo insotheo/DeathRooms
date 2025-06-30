@@ -10,16 +10,20 @@
 class GameScene : _SCENE{
 public:
     GameScene()
-    : wall_sprite(StaticAssets::null_texture), floor_sprite(StaticAssets::null_texture)
+    : wall_sprite(StaticAssets::null_texture), floor_sprite(StaticAssets::null_texture), m_dbg_mode(false), m_fps(0.f)
     {}
 
 protected:
     void begin() override;
     void tick(TICK_ARGS) override;
     void render(RENDER_ARGS) override;
+    void event(EVENT_ARGS) override;
     void finish() override;
 
 private:
+    bool m_dbg_mode;
+    float m_fps;
+
     sf::View m_cam;
     Player* m_player;
 

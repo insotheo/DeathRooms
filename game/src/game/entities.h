@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include <utility>
 #include "engine/entity.h"
 #include "engine/animator.h"
 #include "engine/static_assets.h"
@@ -30,6 +31,11 @@ public:
     ~Player(){
         finish();
     }
+
+    inline const std::pair<float, float> get_pos_pair() const {
+        return {m_pos.x, m_pos.y};
+    }
+
 protected:
     void tick(ENTITY_TICK_ARGS) override; 
     void render(RENDER_ARGS) override;

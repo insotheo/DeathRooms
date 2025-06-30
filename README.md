@@ -9,3 +9,5 @@ Game made in C++ with SFML
 
 [PixelFrog](https://pixelfrog-assets.itch.io/)
 
+[ImGUI](https://github.com/ocornut/imgui)
+[ImGUI-SFML](https://github.com/SFML/imgui-sfml)

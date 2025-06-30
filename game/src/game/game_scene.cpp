@@ -1,5 +1,8 @@
 #include "game/scenes.h"
 
+#include "imgui.h"
+#include <format>
+
 #include "game/map.h"
 
 void GameScene::begin(){
@@ -26,6 +29,10 @@ void GameScene::begin(){
 }
 
 void GameScene::tick(TICK_ARGS){
+    if(m_dbg_mode){
+        m_fps = static_cast<int>((1.f / dt) * 10) / 10.f; 
+    }
+
     m_player->call_tick(_TICK_ARGS, *this);
     m_cam.setCenter(m_player->get_rect().getCenter());
     wnd.setView(m_cam);
@@ -49,6 +56,22 @@ void GameScene::render(RENDER_ARGS){
     }
 
     m_player->call_render(_RENDER_ARGS);
+
+    if(m_dbg_mode){
+        auto [x, y] = m_player->get_pos_pair();
+        ImGui::Begin("DBG");
+        ImGui::Text(std::format("FPS: {}", m_fps).c_str());
+        ImGui::Text(std::format("Player pos: x = {} ; y = {}", static_cast<int>(x * 10) / 10.f, static_cast<int>(y * 10) / 10.f).c_str());
+        ImGui::End();
+    }
+}
+
+void GameScene::event(EVENT_ARGS){
+    if(const auto& key_rel_e = e->getIf<sf::Event::KeyReleased>()){
+        if(key_rel_e->code == sf::Keyboard::Key::F2){
+            m_dbg_mode = !m_dbg_mode;
+        }
+    }
 }
 
 void GameScene::finish(){
