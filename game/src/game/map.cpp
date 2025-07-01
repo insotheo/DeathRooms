@@ -116,6 +116,10 @@ void gen_map(GEN_MAP_FUNC_ARGS){
                     float y = round_to_tile(p0.y + dy * s * tile_h, tile_h);
                     sf::FloatRect floor_tile({x, y}, {tile_w, tile_h});
 
+                    out_walls.erase(std::remove_if(out_walls.begin(), out_walls.end(), [&](const sf::FloatRect& wall){
+                        return wall.findIntersection(floor_tile);
+                    }), out_walls.end());
+
                     if (std::any_of(out_floors.begin(), out_floors.end(), [&](const sf::FloatRect& f) { return f.findIntersection(floor_tile); }))
                         continue;
                     out_floors.push_back(floor_tile);

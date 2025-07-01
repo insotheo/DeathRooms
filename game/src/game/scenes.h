@@ -10,7 +10,8 @@
 class GameScene : _SCENE{
 public:
     GameScene()
-    : wall_sprite(StaticAssets::null_texture), floor_sprite(StaticAssets::null_texture), m_dbg_mode(false), m_fps(0.f)
+    : wall_sprite(StaticAssets::null_texture), floor_sprite(StaticAssets::null_texture),
+     m_dbg_mode(false), m_fps(0.f), m_dbg_draw_collisions(false), m_dbg_draw_floor(true)
     {}
 
 protected:
@@ -21,7 +22,12 @@ protected:
     void finish() override;
 
 private:
+    void player_collision();
+
+private:
     bool m_dbg_mode;
+    bool m_dbg_draw_collisions;
+    bool m_dbg_draw_floor;
     float m_fps;
 
     sf::View m_cam;

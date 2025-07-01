@@ -39,7 +39,7 @@ public:
     inline const std::pair<float, float> get_pos_pair() const {
         return {m_pos.x, m_pos.y};
     }
-
+    
 protected:
     void tick(ENTITY_TICK_ARGS) override; 
     void render(RENDER_ARGS) override;
