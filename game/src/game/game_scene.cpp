@@ -5,7 +5,8 @@
 
 #include "game/map.h"
 
-#define PLAYER_RECT_DIV 3.f
+#define PLAYER_RECT_DIV 2.5f
+#define WALL_RECT_DIV 1.05f
 
 void GameScene::begin(){
     if(!wall_texture.loadFromFile("./assets/brick.png")){return;}
@@ -20,10 +21,10 @@ void GameScene::begin(){
     floor_sprite.setScale({2.f, 2.f});
     floor_sprite.setColor(sf::Color(200, 200, 200));
 
-    gen_map(50, wall_sprite, walls, floor_sprite, floors, {{5, 7}, {7, 5}, {4, 8}});
+    gen_map(25, wall_sprite, walls, floor_sprite, floors, {{5, 7}, {7, 5}, {7, 9}, {2, 2}, {9, 9}});
 
     m_cam.setSize(sf::Vector2f(960.f, 540.f)); //16:9
-    p_clear_color = sf::Color(35,35,35);
+    p_clear_color = sf::Color(35, 35, 35);
 
     m_player = new Player({0, 0});
 }
@@ -49,8 +50,8 @@ void GameScene::render(RENDER_ARGS){
             wnd.draw(wall_sprite);
             
             if(m_dbg_draw_collisions){
-                sf::RectangleShape wall_collision(w.size);
-                wall_collision.setPosition(w.position);
+                sf::RectangleShape wall_collision(w.size / WALL_RECT_DIV);
+                wall_collision.setPosition(w.getCenter() - (w.size / WALL_RECT_DIV) / 2.f);
                 wall_collision.setFillColor(sf::Color::Transparent);
                 wall_collision.setOutlineColor(sf::Color::Red);
                 wall_collision.setOutlineThickness(2.f);
@@ -71,7 +72,7 @@ void GameScene::render(RENDER_ARGS){
     m_player->call_render(_RENDER_ARGS);
     if(m_dbg_draw_collisions){
         sf::RectangleShape player_collision_shape(m_player->get_rect().size / PLAYER_RECT_DIV);
-        player_collision_shape.setPosition(m_player->get_rect().getCenter() - (player_collision_shape.getGlobalBounds().size / PLAYER_RECT_DIV));
+        player_collision_shape.setPosition(m_player->get_rect().position + (m_player->get_rect().size / PLAYER_RECT_DIV) / 1.5f);
         player_collision_shape.setFillColor(sf::Color::Transparent);
         player_collision_shape.setOutlineColor(sf::Color::Green);
         player_collision_shape.setOutlineThickness(2.f);
@@ -93,18 +94,38 @@ void GameScene::render(RENDER_ARGS){
 void GameScene::player_collision(){
     const sf::FloatRect valid_zone(m_cam.getCenter() - (m_cam.getSize() / 2.f), m_cam.getSize() * 0.5f);
 
-    const sf::FloatRect& player_init_rect = m_player->get_rect();
-    const sf::FloatRect player_rect(player_init_rect.getCenter() - (player_init_rect.size / PLAYER_RECT_DIV), player_init_rect.size / PLAYER_RECT_DIV);
+    const sf::FloatRect player_rect(m_player->get_rect().position + (m_player->get_rect().size / PLAYER_RECT_DIV) / 1.5f, m_player->get_rect().size / PLAYER_RECT_DIV);
 
     for(const auto& w : walls){
         if(!valid_zone.findIntersection(w).has_value()){
             continue;
         }
-        if(player_rect.position.x < w.position.x + w.size.x &&
-            player_rect.position.x + player_rect.size.x > w.position.x &&
-            player_rect.position.y < w.position.y + w.size.y &&
-            player_rect.position.y + player_rect.size.y > w.position.y){
-            std::cout << "!\n";
+        sf::FloatRect wall(w.getCenter() - (w.size / WALL_RECT_DIV) / 2.f, w.size / WALL_RECT_DIV);
+        if(player_rect.findIntersection(wall).has_value()){
+            float overlapLeft = player_rect.position.x + player_rect.size.x - wall.position.x;
+            float overlapRight = wall.position.x + wall.size.x - player_rect.position.x;
+            float overlapTop = player_rect.position.y + player_rect.size.y - wall.position.y;
+            float overlapBottom = wall.position.y + wall.size.y - player_rect.position.y;
+
+            float minOverlap = std::min({overlapLeft, overlapRight, overlapTop, overlapBottom});
+
+            if (minOverlap == overlapLeft) {
+                //left
+                m_player->get_pos().x -= overlapLeft;
+            } 
+            else if (minOverlap == overlapRight) {
+                //right
+                m_player->get_pos().x += overlapRight;
+            } 
+            else if (minOverlap == overlapTop) {
+                //top
+                m_player->get_pos().y -= overlapTop;
+            } 
+            else if (minOverlap == overlapBottom) {
+                //bottom
+                m_player->get_pos().y += overlapBottom;
+            }
+            m_player->update_pos();
         }
     }
 }

@@ -1,6 +1,6 @@
 #include "game/map.h"
 
-void gen_map(GEN_MAP_FUNC_ARGS){
+void gen_map(GEN_MAP_FUNC_ARGS) {
     out_walls.clear();
     out_floors.clear();
 
@@ -22,7 +22,6 @@ void gen_map(GEN_MAP_FUNC_ARGS){
     room_positions.insert({0, 0});
     room_size_map[{0, 0}] = room_sizes[room_size_dist(rng)];
 
-    //gen room graph
     while (room_positions.size() < rooms_count && !room_stack.empty()) {
         IntPair current = room_stack.top();
         room_stack.pop();
@@ -39,14 +38,11 @@ void gen_map(GEN_MAP_FUNC_ARGS){
         }
     }
 
-    //placing tales
     std::unordered_map<IntPair, sf::Vector2f> room_world_pos;
     std::unordered_map<IntPair, std::vector<sf::FloatRect>> room_floors;
-
     const float spacing = 2.0f;
 
     for (const auto& [room, size] : room_size_map) {
-        //world offset
         sf::Vector2f base_pos = {
             room.x * (size.x * tile_w + spacing * tile_w),
             room.y * (size.y * tile_h + spacing * tile_h)
@@ -70,74 +66,71 @@ void gen_map(GEN_MAP_FUNC_ARGS){
         }
     }
 
-    //doors and halls
     std::unordered_set<std::pair<int, int>, std::hash<std::pair<int, int>>> placed_corridor_tiles;
-    auto round_to_tile = [&](float v, float tile_size) -> float {
-        return std::floor(v / tile_size) * tile_size;
-    };
 
     for (const auto& [room, size] : room_size_map) {
         sf::Vector2f centerA = {
-            room_world_pos[room].x + tile_w * size.x / 2.0f,
-            room_world_pos[room].y + tile_h * size.y / 2.0f
+            room_world_pos[room].x + (size.x / 2) * tile_w,
+            room_world_pos[room].y + (size.y / 2) * tile_h
         };
 
         for (const IntPair& dir : directions) {
             IntPair neighbor = { room.x + dir.x, room.y + dir.y };
             if (!room_size_map.count(neighbor)) continue;
 
+            const auto& neighbor_size = room_size_map[neighbor];
             sf::Vector2f centerB = {
-                room_world_pos[neighbor].x + tile_w * room_size_map[neighbor].x / 2.0f,
-                room_world_pos[neighbor].y + tile_h * room_size_map[neighbor].y / 2.0f
+                room_world_pos[neighbor].x + (neighbor_size.x / 2) * tile_w,
+                room_world_pos[neighbor].y + (neighbor_size.y / 2) * tile_h
             };
 
-            sf::Vector2f a = centerA;
-            sf::Vector2f b = centerB;
-
-            std::vector<sf::Vector2f> path;
-            path.push_back(a);
-
-            path.push_back({b.x, a.y});
-            path.push_back(b);
+            std::vector<sf::Vector2f> path = {centerA, {centerB.x, centerA.y}, centerB};
 
             for (size_t i = 1; i < path.size(); ++i) {
                 sf::Vector2f p0 = path[i - 1];
                 sf::Vector2f p1 = path[i];
 
-                int steps = 0;
-                if (p0.x != p1.x) steps = std::abs((int)((p1.x - p0.x) / tile_w));
-                else if (p0.y != p1.y) steps = std::abs((int)((p1.y - p0.y) / tile_h));
-
                 int dx = (p1.x > p0.x) ? 1 : (p1.x < p0.x) ? -1 : 0;
                 int dy = (p1.y > p0.y) ? 1 : (p1.y < p0.y) ? -1 : 0;
+                int steps = (dx != 0) ? std::abs((int)((p1.x - p0.x) / tile_w)) :
+                            std::abs((int)((p1.y - p0.y) / tile_h));
 
                 for (int s = 0; s <= steps; ++s) {
-                    float x = round_to_tile(p0.x + dx * s * tile_w, tile_w);
-                    float y = round_to_tile(p0.y + dy * s * tile_h, tile_h);
-                    sf::FloatRect floor_tile({x, y}, {tile_w, tile_h});
+                    float x = p0.x + dx * s * tile_w;
+                    float y = p0.y + dy * s * tile_h;
+                    sf::FloatRect tile({x, y}, {tile_w, tile_h});
 
-                    out_walls.erase(std::remove_if(out_walls.begin(), out_walls.end(), [&](const sf::FloatRect& wall){
-                        return wall.findIntersection(floor_tile);
-                    }), out_walls.end());
+                    out_walls.erase(
+                        std::remove_if(out_walls.begin(), out_walls.end(),
+                            [&](const sf::FloatRect& wall) {
+                                return wall.findIntersection(tile);
+                            }),
+                        out_walls.end());
 
-                    if (std::any_of(out_floors.begin(), out_floors.end(), [&](const sf::FloatRect& f) { return f.findIntersection(floor_tile); }))
-                        continue;
-                    out_floors.push_back(floor_tile);
+                    auto tile_coord = std::make_pair((int)(x / tile_w), (int)(y / tile_h));
+                    if (!placed_corridor_tiles.count(tile_coord)) {
+                        out_floors.push_back(tile);
+                        placed_corridor_tiles.insert(tile_coord);
 
-                    sf::FloatRect neighbors[4] = {
-                        {{x - tile_w, y}, {tile_w, tile_h}},
-                        {{x + tile_w, y}, {tile_w, tile_h}},
-                        {{x, y - tile_h}, {tile_w, tile_h}},
-                        {{x, y + tile_h}, {tile_w, tile_h}}
-                    };
+                        sf::FloatRect neighbors[4] = {
+                            {{x - tile_w, y}, {tile_w, tile_h}},
+                            {{x + tile_w, y}, {tile_w, tile_h}},
+                            {{x, y - tile_h}, {tile_w, tile_h}},
+                            {{x, y + tile_h}, {tile_w, tile_h}}
+                        };
 
-                    for (const auto& nb : neighbors) {
-                        bool already_wall_or_floor =
-                            std::any_of(out_floors.begin(), out_floors.end(), [&](const sf::FloatRect& f) { return f.findIntersection(nb); }) ||
-                            std::any_of(out_walls.begin(), out_walls.end(), [&](const sf::FloatRect& w) { return w.findIntersection(nb); });
+                        for (const auto& nb : neighbors) {
+                            auto nb_coord = std::make_pair((int)(nb.position.x / tile_w), (int)(nb.position.y / tile_h));
+                            bool is_occupied =
+                                placed_corridor_tiles.count(nb_coord) ||
+                                std::any_of(out_floors.begin(), out_floors.end(),
+                                    [&](const sf::FloatRect& f) { return f.findIntersection(nb); }) ||
+                                std::any_of(out_walls.begin(), out_walls.end(),
+                                    [&](const sf::FloatRect& w) { return w.findIntersection(nb); });
 
-                        if (!already_wall_or_floor) {
-                            out_walls.push_back(nb);
+                            if (!is_occupied) {
+                                out_walls.push_back(nb);
+                            }
                         }
                     }
                 }

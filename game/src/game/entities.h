@@ -39,7 +39,15 @@ public:
     inline const std::pair<float, float> get_pos_pair() const {
         return {m_pos.x, m_pos.y};
     }
+
+    inline sf::Vector2f& get_pos() {
+        return m_pos;
+    }
     
+    inline void update_pos(){
+        m_sprite.setPosition(m_pos);
+    }
+
 protected:
     void tick(ENTITY_TICK_ARGS) override; 
     void render(RENDER_ARGS) override;

@@ -59,7 +59,7 @@ void Player::tick(ENTITY_TICK_ARGS){
         m_animator.set_anim(m_looking_right ? "ATTACK1" : "ATTACK2");
     }
     
-    m_sprite.setPosition(m_pos);
+    update_pos();
     m_animator.tick(dt);
     m_is_moving = false;
     m_attacking = false;
