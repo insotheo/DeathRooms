@@ -3,8 +3,11 @@
 bool Player::s_loaded = false;
 sf::Texture Player::s_idle_texture;
 sf::Texture Player::s_run_texture;
+sf::Texture Player::s_attack1_texture;
+sf::Texture Player::s_attack2_texture;
 
 void Player::tick(ENTITY_TICK_ARGS){
+    //movement
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)){
         m_dir.y -= 1.f;
         m_is_moving = true;
@@ -22,6 +25,11 @@ void Player::tick(ENTITY_TICK_ARGS){
         m_dir.x += 1.f;
         m_looking_right = true;
         m_is_moving = true;
+    }
+
+    //attack
+    if(sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
+        m_attacking = true;
     }
 
     //rotation
@@ -46,10 +54,15 @@ void Player::tick(ENTITY_TICK_ARGS){
     else{
         m_animator.set_anim("IDLE");
     }
+
+    if(m_attacking){
+        m_animator.set_anim(m_looking_right ? "ATTACK1" : "ATTACK2");
+    }
     
     m_sprite.setPosition(m_pos);
     m_animator.tick(dt);
     m_is_moving = false;
+    m_attacking = false;
 
     p_entity_rect = m_sprite.getGlobalBounds();
 }

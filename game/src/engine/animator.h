@@ -4,14 +4,15 @@
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
 #include <string>
+#include <iostream>
 
 #define NULL_ANIM "NULL"
 
 class Animation
 {
 public:
-    Animation(sf::Texture* texture, int frames_count, int fps, int h, int w, bool loop = false)
-        : texture_map(texture), frames(frames_count), delay(fps == 0 ? 0.f : 1.f/static_cast<float>(fps)), frame_h(h), frame_w(w), is_loop(loop)
+    Animation(sf::Texture* texture, int frames_count, int fps, int h, int w, bool loop = false, bool await = false)
+        : texture_map(texture), frames(frames_count), delay(fps == 0 ? 0.f : 1.f/static_cast<float>(fps)), frame_h(h), frame_w(w), is_loop(loop), is_await(await)
     {}
     Animation() = default;
 
@@ -21,6 +22,7 @@ public:
     int frame_w = 0;
     float delay = 0;
     bool is_loop = false;
+    bool is_await = false;
 };
 
 class Animator{
@@ -40,7 +42,13 @@ public:
         if(m_current_anim == anim_name){
             return;
         }
-        
+        if(m_current_anim != NULL_ANIM){
+            const Animation& current = m_animations.at(m_current_anim);
+            if(current.is_await && !is_anim_done()){
+                return;
+            }
+        }
+
         const auto it = m_animations.find(anim_name);
         if(it == m_animations.end()){
             return;
@@ -53,6 +61,15 @@ public:
         m_sprite.setTexture(*anim.texture_map);
         m_sprite.setTextureRect(sf::IntRect({0, 0}, sf::Vector2(anim.frame_w, anim.frame_h)));
         m_sprite.setOrigin(m_sprite.getLocalBounds().getCenter());
+    }
+
+    inline bool is_anim_done() const {
+        if (m_current_anim == NULL_ANIM){
+            return true;
+        }
+
+        const auto& anim = m_animations.at(m_current_anim);
+        return (!anim.is_loop && frame >= anim.frames - 1);
     }
 
     inline const std::string& get_current_anim() const { return m_current_anim; }
